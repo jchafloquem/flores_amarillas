@@ -139,15 +139,67 @@
   .conjunto {
     transform-box: view-box;
     transform-origin: 230px 606px;
-    animation: vaiven 9s ease-in-out infinite alternate;
+    animation: vaiven 9s ease-in-out 3s infinite alternate;
     will-change: transform;
   }
 
   /* Cada flor se mece desde el punto donde se une a su tallo */
   .mecer {
-    transform-box: fill-box;
-    transform-origin: 50% 72%;
+    transform-box: view-box;
+    transform-origin: 0 0;
     animation: mecer var(--vaiven-flor, 6.5s) ease-in-out var(--retardo, 0s) infinite alternate;
+    will-change: transform;
+  }
+
+  /* ==========================================================
+     Crecimiento desde el florero
+     ========================================================== */
+  /* Niveles de crecimiento: primero brota lo bajo y luego lo alto */
+  .nivel-1 {
+    --nace: 0s;
+    --crece: 1s;
+  }
+
+  .nivel-2 {
+    --nace: 0.5s;
+    --crece: 1.3s;
+  }
+
+  .nivel-3 {
+    --nace: 1s;
+    --crece: 1.5s;
+  }
+
+  /* Los tallos se dibujan desde el agua hacia arriba (pathLength="100") */
+  .tallo {
+    stroke-dasharray: 100;
+    animation-name: crecer;
+    animation-duration: var(--crece, 1.2s);
+    animation-timing-function: ease-out;
+    animation-delay: var(--nace, 0s);
+    animation-fill-mode: both;
+  }
+
+  /* Cada flor brota desde la punta de su tallo y se abre de golpe */
+  .brote {
+    transform-box: view-box;
+    transform-origin: 0 0;
+    animation-name: brotar;
+    animation-duration: 0.9s;
+    animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation-delay: calc(var(--nace, 0s) + var(--crece, 1.2s) - 0.3s);
+    animation-fill-mode: both;
+  }
+
+  /* Las hojas se despliegan desde el punto donde nacen del tallo */
+  .brota-hoja {
+    transform-box: view-box;
+    transform-origin: 0 0;
+    animation-name: brotar;
+    animation-duration: 0.75s;
+    animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation-delay: var(--nace, 0s);
+    animation-fill-mode: both;
     will-change: transform;
   }
 
@@ -179,7 +231,12 @@
     background: linear-gradient(150deg, #fff8cf 0%, #ffe066 42%, #eb9d00 100%);
     box-shadow: 0 0 8px rgba(255, 190, 0, 0.55);
     opacity: 0.92;
-    animation: caer var(--dur, 12s) linear var(--retardo, 0s) infinite;
+    animation-name: caer;
+    animation-duration: var(--dur, 12s);
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    /* Los pétalos empiezan a caer cuando el ramo ya creció */
+    animation-delay: calc(var(--retardo, 0s) + 2.6s);
     will-change: transform, opacity;
   }
 
@@ -204,6 +261,32 @@
     }
   }
 
+  @keyframes crecer {
+    from {
+      stroke-dashoffset: 100;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes brotar {
+    0% {
+      transform: scale(0.06) rotate(-32deg);
+      opacity: 0;
+    }
+    45% {
+      opacity: 1;
+    }
+    72% {
+      transform: scale(1.12) rotate(5deg);
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
+  }
+
   @keyframes caer {
     0% {
       transform: translate3d(0, 0, 0) rotate(0deg);
@@ -224,6 +307,9 @@
   @media (prefers-reduced-motion: reduce) {
     .conjunto,
     .mecer,
+    .tallo,
+    .brote,
+    .brota-hoja,
     .petalo {
       animation: none;
     }
@@ -337,7 +423,9 @@
   <!-- Carta con el mensaje del arreglo -->
   <header class="carta">
     <svg class="carta__flor" viewBox="-56 -56 112 112" aria-hidden="true" focusable="false">
-      <use href="#flor" />
+      <g class="brote">
+        <use href="#flor" />
+      </g>
     </svg>
     <h1>Flores amarillas para ti</h1>
     <p>
@@ -362,31 +450,51 @@
     <g class="conjunto">
       <!-- Tallos: salen del fondo del florero, se juntan en la boca y se abren en abanico -->
       <g fill="none" stroke="url(#gradTallo)" stroke-width="5.4" stroke-linecap="round">
-        <path d="M230 596C232 520 226 404 214 352C208 315 230 222 230 92" />
-        <path d="M230 596C232 520 226 404 214 352C208 315 118 249 118 146" />
-        <path d="M230 596C232 520 226 404 214 352C208 315 342 247 342 142" />
-        <path d="M230 596C232 520 226 404 214 352C206 318 66 302 66 252" />
-        <path d="M230 596C232 520 226 404 214 352C206 318 396 299 396 246" />
-        <path d="M230 596C232 520 226 404 214 352C206 318 152 310 152 268" />
-        <path d="M230 596C232 520 226 404 214 352C206 318 308 312 308 272" />
-        <path d="M230 596C234 520 226 420 214 356C206 348 190 352 178 352" />
-        <path d="M230 596C234 520 226 420 214 356C208 350 268 358 292 358" />
-        <path d="M230 596C232 520 220 430 196 396" />
-        <path d="M230 596C232 520 240 432 268 400" />
+        <path class="tallo nivel-3" pathLength="100" d="M230 596C232 520 226 404 214 352C208 315 230 222 230 92" />
+        <path class="tallo nivel-3" pathLength="100" d="M230 596C232 520 226 404 214 352C208 315 118 249 118 146" />
+        <path class="tallo nivel-3" pathLength="100" d="M230 596C232 520 226 404 214 352C208 315 342 247 342 142" />
+        <path class="tallo nivel-2" pathLength="100" d="M230 596C232 520 226 404 214 352C206 318 66 302 66 252" />
+        <path class="tallo nivel-2" pathLength="100" d="M230 596C232 520 226 404 214 352C206 318 396 299 396 246" />
+        <path class="tallo nivel-2" pathLength="100" d="M230 596C232 520 226 404 214 352C206 318 152 310 152 268" />
+        <path class="tallo nivel-2" pathLength="100" d="M230 596C232 520 226 404 214 352C206 318 308 312 308 272" />
+        <path class="tallo nivel-1" pathLength="100" d="M230 596C234 520 226 420 214 356C206 348 190 352 178 352" />
+        <path class="tallo nivel-1" pathLength="100" d="M230 596C234 520 226 420 214 356C208 350 268 358 292 358" />
+        <path class="tallo nivel-1" pathLength="100" d="M230 596C232 520 220 430 196 396" />
+        <path class="tallo nivel-1" pathLength="100" d="M230 596C232 520 240 432 268 400" />
       </g>
 
       <!-- Hojas repartidas por el ramo (las más bajas quedan dentro del florero) -->
       <g>
-        <use href="#hoja" transform="translate(206 392) rotate(-38) scale(0.92)" />
-        <use href="#hoja" transform="translate(262 388) rotate(26) scale(0.9)" />
-        <use href="#hoja" transform="translate(186 330) rotate(-58) scale(0.78)" />
-        <use href="#hoja" transform="translate(276 326) rotate(52) scale(0.76)" />
-        <use href="#hoja" transform="translate(196 396) rotate(-10) scale(0.8)" />
-        <use href="#hoja" transform="translate(268 400) rotate(14) scale(0.76)" />
-        <use href="#hoja" transform="translate(168 436) rotate(-72) scale(0.62)" />
-        <use href="#hoja" transform="translate(292 442) rotate(66) scale(0.6)" />
-        <use href="#hoja" transform="translate(208 506) rotate(-30) scale(0.5)" />
-        <use href="#hoja" transform="translate(252 510) rotate(24) scale(0.48)" />
+        <g style="--nace: 0.1s" transform="translate(208 506) rotate(-30) scale(0.5)">
+          <use class="brota-hoja" href="#hoja" />
+        </g>
+        <g style="--nace: 0.2s" transform="translate(252 510) rotate(24) scale(0.48)">
+          <use class="brota-hoja" href="#hoja" />
+        </g>
+        <g style="--nace: 0.35s" transform="translate(292 442) rotate(66) scale(0.6)">
+          <use class="brota-hoja" href="#hoja" />
+        </g>
+        <g style="--nace: 0.5s" transform="translate(168 436) rotate(-72) scale(0.62)">
+          <use class="brota-hoja" href="#hoja" />
+        </g>
+        <g style="--nace: 0.7s" transform="translate(206 392) rotate(-38) scale(0.92)">
+          <use class="brota-hoja" href="#hoja" />
+        </g>
+        <g style="--nace: 0.8s" transform="translate(262 388) rotate(26) scale(0.9)">
+          <use class="brota-hoja" href="#hoja" />
+        </g>
+        <g style="--nace: 0.9s" transform="translate(196 396) rotate(-10) scale(0.8)">
+          <use class="brota-hoja" href="#hoja" />
+        </g>
+        <g style="--nace: 1s" transform="translate(268 400) rotate(14) scale(0.76)">
+          <use class="brota-hoja" href="#hoja" />
+        </g>
+        <g style="--nace: 1.3s" transform="translate(186 330) rotate(-58) scale(0.78)">
+          <use class="brota-hoja" href="#hoja" />
+        </g>
+        <g style="--nace: 1.45s" transform="translate(276 326) rotate(52) scale(0.76)">
+          <use class="brota-hoja" href="#hoja" />
+        </g>
       </g>
 
       <!-- Florero de vidrio: cuerpo, agua, reflejos, boca y listón con lazo -->
@@ -470,32 +578,50 @@
 
       <!-- Las nueve flores amarillas, de la más grande a la más pequeña -->
       <g class="flores">
-        <g transform="translate(230 92) rotate(-4) scale(1.24)">
-          <use class="mecer" href="#flor" style="--retardo: 0s; --vaiven-flor: 7s" />
+        <g class="nivel-3" transform="translate(230 92) rotate(-4) scale(1.24)">
+          <g class="brote">
+            <use class="mecer" href="#flor" style="--retardo: 0s; --vaiven-flor: 7s" />
+          </g>
         </g>
-        <g transform="translate(118 146) rotate(6) scale(1.08)">
-          <use class="mecer" href="#flor" style="--retardo: 0.6s; --vaiven-flor: 6.2s" />
+        <g class="nivel-3" transform="translate(118 146) rotate(6) scale(1.08)">
+          <g class="brote">
+            <use class="mecer" href="#flor" style="--retardo: 0.6s; --vaiven-flor: 6.2s" />
+          </g>
         </g>
-        <g transform="translate(342 142) rotate(-9) scale(1.04)">
-          <use class="mecer" href="#flor" style="--retardo: 1.2s; --vaiven-flor: 6.8s" />
+        <g class="nivel-3" transform="translate(342 142) rotate(-9) scale(1.04)">
+          <g class="brote">
+            <use class="mecer" href="#flor" style="--retardo: 1.2s; --vaiven-flor: 6.8s" />
+          </g>
         </g>
-        <g transform="translate(66 252) rotate(13) scale(0.94)">
-          <use class="mecer" href="#flor" style="--retardo: 0.3s; --vaiven-flor: 7.6s" />
+        <g class="nivel-2" transform="translate(66 252) rotate(13) scale(0.94)">
+          <g class="brote">
+            <use class="mecer" href="#flor" style="--retardo: 0.3s; --vaiven-flor: 7.6s" />
+          </g>
         </g>
-        <g transform="translate(396 246) rotate(-11) scale(0.9)">
-          <use class="mecer" href="#flor" style="--retardo: 1.5s; --vaiven-flor: 6.5s" />
+        <g class="nivel-2" transform="translate(396 246) rotate(-11) scale(0.9)">
+          <g class="brote">
+            <use class="mecer" href="#flor" style="--retardo: 1.5s; --vaiven-flor: 6.5s" />
+          </g>
         </g>
-        <g transform="translate(152 268) rotate(-15) scale(0.86)">
-          <use class="mecer" href="#flor" style="--retardo: 0.9s; --vaiven-flor: 7.2s" />
+        <g class="nivel-2" transform="translate(152 268) rotate(-15) scale(0.86)">
+          <g class="brote">
+            <use class="mecer" href="#flor" style="--retardo: 0.9s; --vaiven-flor: 7.2s" />
+          </g>
         </g>
-        <g transform="translate(308 272) rotate(10) scale(0.86)">
-          <use class="mecer" href="#flor" style="--retardo: 1.8s; --vaiven-flor: 6.9s" />
+        <g class="nivel-2" transform="translate(308 272) rotate(10) scale(0.86)">
+          <g class="brote">
+            <use class="mecer" href="#flor" style="--retardo: 1.8s; --vaiven-flor: 6.9s" />
+          </g>
         </g>
-        <g transform="translate(178 352) rotate(17) scale(0.66)">
-          <use class="mecer" href="#flor" style="--retardo: 2.1s; --vaiven-flor: 5.8s" />
+        <g class="nivel-1" transform="translate(178 352) rotate(17) scale(0.66)">
+          <g class="brote">
+            <use class="mecer" href="#flor" style="--retardo: 2.1s; --vaiven-flor: 5.8s" />
+          </g>
         </g>
-        <g transform="translate(292 358) rotate(-19) scale(0.62)">
-          <use class="mecer" href="#flor" style="--retardo: 2.4s; --vaiven-flor: 6.1s" />
+        <g class="nivel-1" transform="translate(292 358) rotate(-19) scale(0.62)">
+          <g class="brote">
+            <use class="mecer" href="#flor" style="--retardo: 2.4s; --vaiven-flor: 6.1s" />
+          </g>
         </g>
       </g>
     </g>
