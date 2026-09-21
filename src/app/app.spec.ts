@@ -14,10 +14,13 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render title', async () => {
+  it('should render the yellow flowers arrangement', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, 05_floresamarillas');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Flores amarillas para ti');
+    expect(compiled.querySelectorAll('.ramo use[href="#flor"]').length).toBe(9);
+    expect(compiled.querySelectorAll('.ramo use[href="#hoja"]').length).toBe(10);
+    expect(compiled.querySelectorAll('.petalo').length).toBe(16);
   });
 });
