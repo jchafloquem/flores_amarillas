@@ -19,6 +19,7 @@ describe('App', () => {
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain('Flores amarillas para ti');
+    expect(compiled.querySelector('.carta__dedicatoria')?.textContent).toContain('amor de mi vida');
     expect(compiled.querySelectorAll('.ramo use[href="#flor"]').length).toBe(9);
     expect(compiled.querySelectorAll('.ramo use[href="#hoja"]').length).toBe(10);
     expect(compiled.querySelectorAll('.petalo').length).toBe(16);
