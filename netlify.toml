@@ -1,0 +1,19 @@
+# Configuración de despliegue en Netlify para el arreglo de flores amarillas.
+# Es una SPA de Angular 21 sin SSR: se publica el build estático del navegador.
+
+[build]
+  command = "npm run build"
+  # Salida del builder @angular/build:application (angular.json -> outputPath)
+  publish = "dist/05_floresamarillas/browser"
+
+[build.environment]
+  # Angular 21 pide Node ^20.19 || ^22.12 || >=24
+  # y @netlify/angular-runtime v4 exige Node >= 22, por eso fijamos 22
+  NODE_VERSION = "22"
+  NG_CLI_ANALYTICS = "false"
+
+# SPA: cualquier ruta desconocida vuelve a index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
