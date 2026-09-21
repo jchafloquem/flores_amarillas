@@ -251,6 +251,79 @@
   }
 
   /* ==========================================================
+     Botón flotante de música
+     ========================================================== */
+  .musica {
+    position: absolute;
+    top: clamp(0.6rem, 2vh, 1.1rem);
+    right: clamp(0.6rem, 3vw, 1.2rem);
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    max-width: 11rem;
+    text-align: center;
+  }
+
+  .musica__boton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.95rem;
+    border-radius: 999px;
+    border: 1px solid rgba(224, 138, 0, 0.45);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(255, 243, 200, 0.95));
+    box-shadow: 0 0.6rem 1.4rem -0.8rem rgba(120, 80, 0, 0.55);
+    color: #6a4405;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .musica__boton:hover {
+    transform: translateY(-1px) scale(1.03);
+    box-shadow: 0 0.8rem 1.8rem -0.8rem rgba(120, 80, 0, 0.6);
+  }
+
+  .musica__boton:active {
+    transform: scale(0.97);
+  }
+
+  .musica__icono {
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  /* La nota baila mientras suena la música */
+  .musica--sonando .musica__icono {
+    display: inline-block;
+    animation: bailar 0.9s ease-in-out infinite alternate;
+  }
+
+  .musica__texto {
+    margin: 0;
+    font-size: 0.66rem;
+    line-height: 1.35;
+    color: rgba(106, 68, 5, 0.85);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  @keyframes bailar {
+    from {
+      transform: rotate(-14deg) scale(1);
+    }
+    to {
+      transform: rotate(14deg) scale(1.25);
+    }
+  }
+
+  /* ==========================================================
      Pétalos que caen
      ========================================================== */
   .petalos {
@@ -379,6 +452,7 @@
     .brota-hoja,
     .carta,
     .carta .separador svg,
+    .musica--sonando .musica__icono,
     .petalo {
       animation: none;
     }
@@ -386,6 +460,28 @@
 </style>
 
 <main class="pagina">
+  <!-- Botón de música: suena tu `public/musica.mp3` si existe; si no,
+       toca una melodía original generada en el navegador. -->
+  <div class="musica" [class.musica--sonando]="sonando()">
+    <button
+      type="button"
+      class="musica__boton"
+      (click)="toggleMusica()"
+      [attr.aria-pressed]="sonando()"
+      [attr.aria-label]="sonando() ? 'Pausar la música' : 'Tocar música'"
+    >
+      <span class="musica__icono" aria-hidden="true">{{ sonando() ? '🎶' : '🎵' }}</span>
+      {{ sonando() ? 'Pausar música' : 'Tocar música' }}
+    </button>
+    @if (fuenteMusica()) {
+      <p class="musica__texto" role="status">{{ fuenteMusica() }}</p>
+    }
+  </div>
+  <!-- El audio es opcional: pon tu archivo en `public/musica.mp3`.
+       Si no existe, el navegador usa la melodía original sin descargar nada.
+       `preload="none"` evita una petición 404 hasta que se pulse el botón. -->
+  <audio #audioMusica src="musica.mp3" preload="none" loop></audio>
+
   <!-- Definiciones reutilizables del arreglo (degradados, filtro, recorte,
        una flor amarilla y una hoja). Este svg no ocupa espacio en pantalla. -->
   <svg class="definiciones" width="0" height="0" aria-hidden="true" focusable="false">

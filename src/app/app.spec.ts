@@ -35,4 +35,19 @@ describe('App', () => {
     expect(compiled.querySelectorAll('.ramo .brote').length).toBe(9);
     expect(compiled.querySelectorAll('.ramo .brota-hoja').length).toBe(10);
   });
+
+  it('should offer music with a button and an optional audio file', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const boton = compiled.querySelector('.musica__boton');
+    expect(boton?.textContent).toContain('Tocar música');
+    const audio = compiled.querySelector('audio');
+    expect(audio?.getAttribute('src')).toContain('musica.mp3');
+    expect(audio?.hasAttribute('loop')).toBe(true);
+    // Pulsar el botón no debe romper la página aunque no haya archivo ni AudioContext.
+    (boton as HTMLButtonElement | null)?.click();
+    await fixture.whenStable();
+    expect(compiled.querySelector('.musica')).toBeTruthy();
+  });
 });
